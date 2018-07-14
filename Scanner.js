@@ -1,27 +1,6 @@
-const {makeEnum, toks, keywords} = require('./loxLibs.js')
+const { makeEnum, toks, keywords } = require('./loxLibs')
 const Token = require('./Token');
-
-class Lox {
-    run(source="") {
-        let scanner = new Scanner(source);
-        let tokens = scanner.scanTokens();
-        for (let i=0; i<tokens.length; i++) {
-            console.log(tokens[i]);
-        }
-    }
-    // runLine() {
-    //     const readline = require('readline');
-
-    //     this.run(readline());
-    // }
-    static error(line, message) {
-        this.report(line, "", message)
-    }
-    static report(line, where, message) {
-        console.log("[line " + line + "] Error" + where + ": " + message);
-        Lox.hadError = true;
-    }
-}
+const { Lox } = require('./Lox');
 
 class Scanner {
     constructor(source="") {
@@ -40,7 +19,7 @@ class Scanner {
     }
     scanToken() {
         let c = this.advance();
-        console.log('char:', c);
+        // console.log('char:', c);
         switch (c) {
             case '(': this.addToken(toks.LEFT_PAREN); break;
             case ')': this.addToken(toks.RIGHT_PAREN); break;
@@ -79,7 +58,6 @@ class Scanner {
             case '"': this.string(); break;
             default:
                 if (this.isDigit(c)) {
-                    console.log('digit', c)
                     this.number();
                 } else if (this.isAlpha(c)) {
                     this.identifier();
@@ -94,10 +72,8 @@ class Scanner {
         while (this.isAlphaNumeric(this.peek())) this.advance();
 
         let text = this.source.substring(this.start, this.current);
-
         let tokType = keywords[text] === undefined ? toks.IDENTIFIER : keywords[text];
-        
-        console.log('identifier:', text, 'type:', tokType);
+        // console.log('identifier:', text, 'type:', tokType);
 
         this.addToken(tokType);
     }
@@ -184,8 +160,5 @@ class Scanner {
         return this.current >= this.source.length;
     }
 }
-let loxScanner = new Scanner(`
-a /* b * c */ d
-`);
-loxScanner.scanTokens();
-console.log(loxScanner.tokens);
+
+module.exports = { Scanner };

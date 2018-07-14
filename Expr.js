@@ -1,48 +1,48 @@
 let Token = require('./Token.js');
 let { toks } = require('./loxLibs.js');
 
-// an expression visitor
-class AstPrinter {
-    print(expr) {
-        return expr.accept(this);
+class BinaryExpr {
+    constructor(left, operator, right) {
+        this.left = left;
+        this.operator = operator;
+        this.right = right;
+        this.type = 'Binary';
     }
-    visitBinaryExpr(expr) {
-        return this.parenthesise(expr.operator.lexeme, expr.left, expr.right);
-    }
-    visitGroupingExpr(expr) {
-        return this.parenthesise("group", expr.expression);
-    }
-    visitLiteralExpr(expr) {
-        if (expr.value == null) return "nil";
-        // TODO: check if toString() is necessary
-        return expr.value;
-    }
-    visitUnaryExpr(expr) {
-        return this.parenthesise(expr.operator.lexeme, expr.right);
-    }
-    parenthesise(name, ...exprs) {
-        let strArr = [];
-        strArr.push("(" + name);
-        for (let expr of exprs) {
-            strArr.push(" ");
-            strArr.push(expr.accept(this));
-        }
-        strArr.push(')');
-        return strArr.join('');
+    accept(visitor) {
+        return visitor.visitBinaryExpr(this);
     }
 }
 
-// class Binary {
-//     constructor(left, operator, right) {
-//         this.left = left;
-//         this.operator = operator;
-//         this.right = right;
-//         this.expType = 'Binary';
-//     }
-//     accept(visitor) {
-//         visitor.visitBinaryExpr(this);
-//     }
-// }
+class UnaryExpr {
+    constructor(operator, right) {
+        this.operator = operator;
+        this.right = right;
+        this.type = 'Unary';
+    }
+    accept(visitor) {
+        return visitor.visitUnaryExpr(this);
+    }
+}
+
+class LiteralExpr {
+    constructor(value) {
+        this.value = value;
+        this.type = 'Literal';
+    }
+    accept(visitor) {
+        return visitor.visitLiteralExpr(this);
+    }
+}
+
+class GroupingExpr {
+    constructor(expression) {
+        this.expression = expression;
+        this.type = 'Grouping';
+    }
+    accept(visitor) {
+        return visitor.visitGroupingExpr(this);
+    }
+}
 
 function createExprClass(name, fields) {
     class GeneratedExpr {
@@ -53,46 +53,29 @@ function createExprClass(name, fields) {
             this.expType = name;
         }
         accept(visitor) {
-            return visitor['visit' + name + 'Expr'](this);
+            return visitor['visit' + name](this);
         }
     }
     return GeneratedExpr;
 }
 
-const Unary = createExprClass('Unary', ['operator', 'right']);
-const Literal = createExprClass('Literal', ['value']);
-const Binary = createExprClass('Binary', ['left', 'operator', 'right']);
-const Grouping = createExprClass('Grouping', ['expression'])
-console.log(Unary);
-let un = new Unary('a', '-');
-let bi = new Binary('a', '-', 'b');
+// const UnaryExpr = createExprClass('UnaryExpr', ['operator', 'right']);
+// const LiteralExpr = createExprClass('LiteralExpr', ['value']);
+// const BinaryExpr = createExprClass('BinaryExpr', ['left', 'operator', 'right']);
+// const GroupingExpr = createExprClass('GroupingExpr', ['expression'])
 
-let astPrinter = new AstPrinter();
-let expression = new Binary(
-    new Unary(
-        new Token(toks.MINUS, "-", null, 1),
-        new Literal(123)),
-    new Token(toks.STAR, "*", null, 1),
-    new Grouping(
-        new Literal(45.67)));
-
-console.log(astPrinter.print(expression));
+// let astPrinter = new AstPrinter();
+// let expression = new BinaryExpr(
+//     new UnaryExpr(
+//         new Token(toks.MINUS, "-", null, 1),
+//         new LiteralExpr(123)),
+//     new Token(toks.STAR, "*", null, 1),
+//     new GroupingExpr(
+//         new LiteralExpr(45.67)));
+// console.log(astPrinter.print(expression));
 
 // console.log(Object.getOwnPropertyNames(Literal.prototype));
 
-class Parser {
-    constructor(tokens) {
-        this.tokens = tokens;
-        this.current = 0;
-    }
-    expression() {
-        return this.equality();
-    }
-    
-    equality() {
-        let expr = this.comparison();
-        // while (match())
-            
-    }
-    
+module.exports = {
+    UnaryExpr, LiteralExpr, BinaryExpr, GroupingExpr
 }
