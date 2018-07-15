@@ -7,7 +7,6 @@ class AstPrinter extends TreeVisitor{
     print(statements) {
         let representation = ["["];
         for (let statement of statements) {
-            console.log(statement);
             if (statement instanceof Stmt) {
                 representation.push("  " + statement.accept(this));
             } else {
@@ -17,7 +16,7 @@ class AstPrinter extends TreeVisitor{
         return representation.join("\n") + "\n]";
     }
     visitVarStmt(stmt) {
-        return this.parenthesise("VAR", stmt.name, "=", stmt.initialiser);
+        return this.parenthesise("VAR", stmt.name, stmt.initialiser);
     }
     visitPrintStmt(stmt) {
         return this.parenthesise("PRINT", stmt.expression);
@@ -42,6 +41,9 @@ class AstPrinter extends TreeVisitor{
     }
     visitUnaryExpr(expr) {
         return this.parenthesise(expr.operator.lexeme, expr.right);
+    }
+    visitVariableExpr(expr) {
+        return expr.name.lexeme;
     }
     // parenthesise(name, ...exprs) {
     //     let strArr = [];

@@ -2,8 +2,13 @@ const { TreeVisitor } = require('./TreeVisitor');
 let { toks } = require('./loxLibs');
 let { LoxRuntimeError } = require('./LoxRuntimeError');
 let { Lox } = require('./Lox');
+let { Environment } = require('./Environment');
 
 class Interpreter extends TreeVisitor {
+    constructor() {
+        super();
+        this.environment = new Environment();
+    }
     interpret(statements) {
         try {
             for (let statement of statements) {
@@ -78,6 +83,10 @@ class Interpreter extends TreeVisitor {
         // Unreachable
         return null;
     }
+    visitVariableExpr(expr) {
+        // VariableExpr {name: tok}
+        return this.environment.lookup(expr.name);
+    }
     checkNumberOperand(operator, operand) {
         //             token   , obj
         if (typeof operand === 'number') return;
@@ -104,6 +113,15 @@ class Interpreter extends TreeVisitor {
     visitPrintStmt(stmt) {
         let value = this.evaluate(stmt.expression);
         console.log(">", this.stringify(value));
+        return null;
+    }
+    visitVarStmt(stmt) {
+        let value = null;
+        if (stmt.initialiser != null) {
+            value = this.evaluate(stmt.initialiser);
+        }
+        this.environment.define(stmt.name.lexeme, value);
+        return null;
     }
     isTruthy(obj) {
         if (obj === null) return false;
@@ -132,13 +150,15 @@ let { AstPrinter } = require('./AstPrinter');
 
 let loxScanner = new Scanner(`
     print "start!";
-    asd 3 / "asdf";
+    var a = 4;
+    var b = a + 1;
+    print a * b;
 `);
 loxScanner.scanTokens();
 let statements = new Parser(loxScanner.tokens).parse();
 let interpreter = new Interpreter();
 let printer = new AstPrinter();
 interpreter.interpret(statements);
+console.log(printer.print(statements));
 
-// console.log(printer.print(statements));
 // console.log("end parsing");

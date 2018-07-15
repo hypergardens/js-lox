@@ -69,6 +69,9 @@ class Parser {
     }
 
     // expression → equality ;
+    // expression → assignment ;
+    // assignment → identifier "=" assignment
+    //            | equality ;
     expression() {
         return this.equality();
     }
