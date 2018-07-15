@@ -27,6 +27,9 @@ class AstPrinter extends TreeVisitor{
     visitNullStmt(stmt) {
         return this.parenthesise("NULLSTMT");
     }
+    visitAssignExpr(expr) {
+        return this.parenthesise("ASSIGN", expr.name, expr.value);
+    }
     visitBinaryExpr(expr) {
         return this.parenthesise(expr.operator.lexeme, expr.left, expr.right);
     }

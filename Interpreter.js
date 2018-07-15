@@ -15,8 +15,9 @@ class Interpreter extends TreeVisitor {
                 this.execute(statement);
             }
         } catch (e) {
-            // console.log(e);
-            Lox.runtimeError({type:"DUMMY"}, e);
+            // HACK: this error is wonky
+            console.log(e.token, e.message);
+            Lox.runtimeError(e.token, e);
         }
     }
     visitLiteralExpr(expr) {
@@ -123,6 +124,11 @@ class Interpreter extends TreeVisitor {
         this.environment.define(stmt.name.lexeme, value);
         return null;
     }
+    visitAssignExpr(expr) {
+        let value = this.evaluate(expr.value);
+        this.environment.assign(expr.name, value);
+        return value;
+    }
     isTruthy(obj) {
         if (obj === null) return false;
         if (typeof obj === 'boolean') return Boolean(obj);
@@ -150,9 +156,14 @@ let { AstPrinter } = require('./AstPrinter');
 
 let loxScanner = new Scanner(`
     print "start!";
-    var a = 4;
-    var b = a + 1;
-    print a * b;
+    var b;
+    var a = b = 5;
+    print a;
+    a = 35;
+    print a;
+    print b;
+    a = b = "muffin";
+    print a + b;
 `);
 loxScanner.scanTokens();
 let statements = new Parser(loxScanner.tokens).parse();

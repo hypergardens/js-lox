@@ -68,14 +68,26 @@ class Parser {
         return new Stmt.Expression(expr);
     }
 
-    // expression → equality ;
     // expression → assignment ;
     // assignment → identifier "=" assignment
     //            | equality ;
     expression() {
-        return this.equality();
+        return this.assignment();
     }
-    
+    assignment() {
+        let expr = this.equality();
+        if (this.match(toks.EQUAL)) {
+            let equalsToken = this.previous();
+            let rightValue = this.assignment();
+
+            if (expr instanceof Expr.Variable) {
+                let nameToken = expr.name;
+                return new Expr.Assign(nameToken, rightValue);
+            }
+            this.error(equalsToken, "Invalid assignment target.");
+        }
+        return expr;
+    }
     // equality → comparison ( ( "!=" | "==" ) comparison )* ;
     equality() {
         let expr = this.comparison();

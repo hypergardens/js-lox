@@ -64,6 +64,18 @@ class Variable extends Base {
     }
 }
 
+class Assign extends Base {
+    constructor(name, value) {
+        //      tok , expr
+        super();
+        this.name = name;
+        this.value = value;
+    }
+    accept(visitor) {
+        return visitor.visitAssignExpr(this);
+    }
+}
+
 function createExprClass(name, fields) {
     class GeneratedExpr {
         constructor(...values) {
@@ -97,6 +109,7 @@ function createExprClass(name, fields) {
 // console.log(Object.getOwnPropertyNames(Literal.prototype));
 
 module.exports = {
+    Assign,
     Base,
     Unary,
     Literal,
