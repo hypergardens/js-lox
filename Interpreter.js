@@ -1,9 +1,9 @@
-const { ExprVisitor } = require('./ExprVisitor');
+const { TreeVisitor } = require('./TreeVisitor');
 let { toks } = require('./loxLibs');
 let { LoxRuntimeError } = require('./LoxRuntimeError');
 let { Lox } = require('./Lox');
 
-class Interpreter extends ExprVisitor {
+class Interpreter extends TreeVisitor {
     interpret(statements) {
         try {
             for (let statement of statements) {

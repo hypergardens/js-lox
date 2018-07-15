@@ -1,6 +1,6 @@
-const { ExprVisitor } = require('./ExprVisitor');
+const { TreeVisitor } = require('./TreeVisitor');
 // an expression visitor
-class AstPrinter extends ExprVisitor{
+class AstPrinter extends TreeVisitor{
     print(expr) {
         return expr.accept(this);
     }

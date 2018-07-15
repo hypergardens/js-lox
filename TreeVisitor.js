@@ -1,5 +1,5 @@
 // an expression visitor
-class ExprVisitor {
+class TreeVisitor {
     visitBinaryExpr(expr) {
         throw 'Not implemented!'
     }
@@ -12,6 +12,12 @@ class ExprVisitor {
     visitUnaryExpr(expr) {
         throw 'Not implemented!'
     }
+    visitPrintStmt(stmt){
+        throw 'Not implemented!'
+    }
+    visitExpressionStmt(stmt) {
+        throw 'Not implemented!'
+    }
 }
 
-module.exports = { ExprVisitor };
+module.exports = { TreeVisitor };
