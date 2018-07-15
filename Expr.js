@@ -64,6 +64,10 @@ class VariableExpr extends Expr {
     }
 }
 
+class AssignExpr extends Expr {
+    
+}
+
 function createExprClass(name, fields) {
     class GeneratedExpr {
         constructor(...values) {
