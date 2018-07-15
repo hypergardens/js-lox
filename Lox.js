@@ -19,8 +19,8 @@ class Lox {
         console.error("[line " + line + "] Error" + where + ": " + message);
         Lox.hadError = true;
     }
-    static runtimeError(error) {
-        console.error(`[line ${error.token.line}] ${error.message}`)
+    static runtimeError(token, error) {
+        console.error(`[line ${token.line}] ${error.message}`)
         Lox.hadRuntimeError = true;
     }
 }

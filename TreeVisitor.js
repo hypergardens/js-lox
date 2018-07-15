@@ -12,12 +12,12 @@ class TreeVisitor {
     visitUnaryExpr(expr) {
         throw 'Not implemented!'
     }
-    visitPrintStmt(stmt){
-        throw 'Not implemented!'
-    }
-    visitExpressionStmt(stmt) {
-        throw 'Not implemented!'
-    }
+    // visitPrintStmt(stmt){
+    //     throw 'Not implemented!'
+    // }
+    // visitExpressionStmt(stmt) {
+    //     throw 'Not implemented!'
+    // }
 }
 
 module.exports = { TreeVisitor };

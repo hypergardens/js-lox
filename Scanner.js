@@ -1,5 +1,5 @@
 const { makeEnum, toks, keywords } = require('./loxLibs')
-const Token = require('./Token');
+const { Token } = require('./Token');
 const { Lox } = require('./Lox');
 
 class Scanner {

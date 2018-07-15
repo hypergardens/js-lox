@@ -23,6 +23,27 @@ class PrintStmt extends Stmt {
     }
 }
 
+class VarStmt extends Stmt {
+    constructor(name, initialiser) {
+        //      tok,  expr
+        super();
+        this.name = name;
+        this.initialiser = initialiser;
+    }
+    accept(visitor) {
+        return visitor.visitVarStmt(this);
+    }
+}
+class NullStmt extends Stmt {
+    constructor() {
+        //      tok,  expr
+        super();
+    }
+    accept(visitor) {
+        return visitor.visitNullStmt(this);
+    }
+}
+
 // class FunctionStmt extends Stmt {
 //     constructor(name, parameters, body) {
 //         super();
@@ -31,6 +52,9 @@ class PrintStmt extends Stmt {
 // }
 
 module.exports = {
+    Stmt,
     ExpressionStmt,
-    PrintStmt
+    PrintStmt,
+    VarStmt,
+    NullStmt
 }

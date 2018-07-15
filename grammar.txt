@@ -3,8 +3,25 @@ program   → statement* EOF ;
 statement → exprStmt
           | printStmt ;
 
+declaration → varDecl
+            | statement ;
+
+varDecl → "var" IDENTIFIER ( "=" expression )? ";" ;
 exprStmt  → expression ";" ;
 printStmt → "print" expression ";" ;
+
+expression     → equality ;
+equality       → comparison ( ( "!=" | "==" ) comparison )* ;
+comparison     → addition ( ( ">" | ">=" | "<" | "<=" ) addition )* ;
+addition       → multiplication ( ( "-" | "+" ) multiplication )* ;
+multiplication → unary ( ( "/" | "*" ) unary )* ;
+unary          → ( "!" | "-" ) unary
+               | primary ;
+primary        → NUMBER | STRING | "false" | "true" | "nil"
+               | "(" expression ")" 
+               | IDENTIFIER ;
+
+old: 
 
 expression → literal
            | unary
@@ -17,15 +34,3 @@ unary      → ( "-" | "!" ) expression ;
 binary     → expression operator expression ;
 operator   → "==" | "!=" | "<" | "<=" | ">" | ">="
            | "+"  | "-"  | "*" | "/" ;
-
-Binary-rejigged rules:
-
-expression     → equality ;
-equality       → comparison ( ( "!=" | "==" ) comparison )* ;
-comparison     → addition ( ( ">" | ">=" | "<" | "<=" ) addition )* ;
-addition       → multiplication ( ( "-" | "+" ) multiplication )* ;
-multiplication → unary ( ( "/" | "*" ) unary )* ;
-unary          → ( "!" | "-" ) unary
-               | primary ;
-primary        → NUMBER | STRING | "false" | "true" | "nil"
-               | "(" expression ")" ;

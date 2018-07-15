@@ -1,5 +1,5 @@
-let { UnaryExpr, LiteralExpr, BinaryExpr, GroupingExpr } = require('./Expr');
-let { PrintStmt, ExpressionStmt } = require('./Stmt');
+let { UnaryExpr, LiteralExpr, BinaryExpr, GroupingExpr, VariableExpr } = require('./Expr');
+let { PrintStmt, ExpressionStmt, VarStmt, NullStmt } = require('./Stmt');
 
 let { toks } = require('./loxLibs');
 // let { Scanner } = require('./Scanner');
@@ -15,24 +15,43 @@ class Parser {
         this.tokens = tokens;
         this.current = 0;
     }
+    // program → statement* EOF ;
     parse() {
+        let statements = [];
+        while (!this.isAtEnd()) {
+            statements.push(this.declaration());
+        }
+        return statements;
+    }
+    
+    // declaration → varDecl
+    //             | statement ;
+    declaration() {
         try {
-            let statements = [];
-            while (!this.isAtEnd()) {
-                statements.push(this.statement());
-            }
-            return statements;
+            if (this.match(toks.VAR)) return this.varDecl();
+            return this.statement();
         } catch (e) {
-            console.error(e);
+            console.log(e.message);
+            this.synchronise();
             return null;
         }
     }
-    
-    // statement → exprStmt
-    //       | printStmt ;
+    // varDecl → "var" IDENTIFIER ( "=" expression )? ";" ;
+    varDecl() {
+        let name = this.consume(toks.IDENTIFIER, `Expect variable name.`);
+        let initialiser = null;
+        if (this.match(toks.EQUAL)) {
+            initialiser = this.expression();
+        }
+        this.consume(toks.SEMICOLON, `Expect ';' after variable declaration.`);
+        return new VarStmt(name, initialiser);
+    }
+
+    // statement → printStmt
+    //           | exprStmt ;
     statement() {
         if (this.match(toks.PRINT)) return this.printStatement();
-        return expressionStatement();
+        return this.expressionStatement();
     }
     
     // printStmt → "print" expression ";" ;
@@ -41,16 +60,17 @@ class Parser {
         this.consume(toks.SEMICOLON, `Expect ';' after value.`);
         return new PrintStmt(value);
     }
-
-    // expression → equality ;
-    expression() {
-        return this.equality();
-    }
     
+    // exprStmt  → expression ";" ;
     expressionStatement() {
         let expr = this.expression();
         this.consume(toks.SEMICOLON, `Expect ';' after expression.`);
         return new ExpressionStmt(expr);
+    }
+
+    // expression → equality ;
+    expression() {
+        return this.equality();
     }
     
     // equality → comparison ( ( "!=" | "==" ) comparison )* ;
@@ -127,6 +147,9 @@ class Parser {
         if (this.match(toks.NUMBER, toks.STRING)){
             return new LiteralExpr(this.previous().literal);
         }
+        if (this.match(toks.IDENTIFIER)) {
+            return new VariableExpr(this.previous());
+        }
         if (this.match(toks.LEFT_PAREN)) {
             let expr = this.expression();
             this.consume(toks.RIGHT_PAREN, "Expect ')' after expression.");
@@ -184,14 +207,14 @@ class Parser {
             if (this.previous().type == toks.SEMICOLON) return;
 
             switch (this.peek().type) {
-                case tons.CLASS:
-                case tons.FUN:
-                case tons.VAR:
-                case tons.FOR:
-                case tons.IF:
-                case tons.WHILE:
-                case tons.PRINT:
-                case tons.RETURN:
+                case toks.CLASS:
+                case toks.FUN:
+                case toks.VAR:
+                case toks.FOR:
+                case toks.IF:
+                case toks.WHILE:
+                case toks.PRINT:
+                case toks.RETURN:
                     return;
               }
         

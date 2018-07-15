@@ -53,6 +53,17 @@ class GroupingExpr extends Expr {
     }
 }
 
+class VariableExpr extends Expr {
+    constructor(name) {
+        //      tok
+        super();
+        this.name = name;
+    }
+    accept(visitor) {
+        return visitor.visitVariableExpr(this);
+    }
+}
+
 function createExprClass(name, fields) {
     class GeneratedExpr {
         constructor(...values) {
@@ -86,5 +97,10 @@ function createExprClass(name, fields) {
 // console.log(Object.getOwnPropertyNames(Literal.prototype));
 
 module.exports = {
-    UnaryExpr, LiteralExpr, BinaryExpr, GroupingExpr
+    Expr,
+    UnaryExpr,
+    LiteralExpr,
+    BinaryExpr,
+    GroupingExpr,
+    VariableExpr
 }
