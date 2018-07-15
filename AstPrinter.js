@@ -1,13 +1,13 @@
 const { TreeVisitor } = require('./TreeVisitor');
-let { Expr, UnaryExpr, LiteralExpr, BinaryExpr, GroupingExpr, VariableExpr } = require('./Expr');
-let { Stmt, PrintStmt, ExpressionStmt, VarStmt } = require('./Stmt');
+let Expr = require('./Expr');
+let Stmt = require('./Stmt');
 let { Token } = require('./Token');
 // an expression visitor
 class AstPrinter extends TreeVisitor{
     print(statements) {
         let representation = ["["];
         for (let statement of statements) {
-            if (statement instanceof Stmt) {
+            if (statement instanceof Stmt.Base) {
                 representation.push("  " + statement.accept(this));
             } else {
                 representation.push(`  (ERROR ${statement})`);
@@ -65,7 +65,7 @@ class AstPrinter extends TreeVisitor{
             // arg is string
             if (typeof arg === 'string') {
                 strArr.push(arg);
-            } else if (arg instanceof Expr) {
+            } else if (arg instanceof Expr.Base) {
                 // arg is expr
                 strArr.push(arg.accept(this));
             } else if (arg instanceof Token) {

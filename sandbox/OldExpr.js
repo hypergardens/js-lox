@@ -1,12 +1,12 @@
 let Token = require('./Token.js');
 let { toks } = require('./loxLibs.js');
 
-class Base {
+class Expr {
     accept(visitor) {
     }
 }
 
-class Binary extends Base {
+class BinaryExpr extends Expr {
     constructor(left, operator, right) {
         super();
         this.left = left;
@@ -19,7 +19,7 @@ class Binary extends Base {
     }
 }
 
-class Unary extends Base {
+class UnaryExpr extends Expr {
     constructor(operator, right) {
         super();
         this.operator = operator;
@@ -31,7 +31,7 @@ class Unary extends Base {
     }
 }
 
-class Literal extends Base {
+class LiteralExpr extends Expr {
     constructor(value) {
         super();
         this.value = value;
@@ -42,7 +42,7 @@ class Literal extends Base {
     }
 }
 
-class Grouping extends Base {
+class GroupingExpr extends Expr {
     constructor(expression) {
         super();
         this.expression = expression;
@@ -53,7 +53,7 @@ class Grouping extends Base {
     }
 }
 
-class Variable extends Base {
+class VariableExpr extends Expr {
     constructor(name) {
         //      tok
         super();
@@ -97,10 +97,10 @@ function createExprClass(name, fields) {
 // console.log(Object.getOwnPropertyNames(Literal.prototype));
 
 module.exports = {
-    Base,
-    Unary,
-    Literal,
-    Binary,
-    Grouping,
-    Variable
+    Expr,
+    UnaryExpr,
+    LiteralExpr,
+    BinaryExpr,
+    GroupingExpr,
+    VariableExpr
 }

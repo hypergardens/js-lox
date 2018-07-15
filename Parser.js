@@ -1,5 +1,5 @@
-let { UnaryExpr, LiteralExpr, BinaryExpr, GroupingExpr, VariableExpr } = require('./Expr');
-let { PrintStmt, ExpressionStmt, VarStmt, NullStmt } = require('./Stmt');
+let Expr = require('./Expr');
+let Stmt = require('./Stmt');
 
 let { toks } = require('./loxLibs');
 // let { Scanner } = require('./Scanner');
@@ -44,7 +44,7 @@ class Parser {
             initialiser = this.expression();
         }
         this.consume(toks.SEMICOLON, `Expect ';' after variable declaration.`);
-        return new VarStmt(name, initialiser);
+        return new Stmt.Var(name, initialiser);
     }
 
     // statement → printStmt
@@ -58,14 +58,14 @@ class Parser {
     printStatement() {
         let value = this.expression();
         this.consume(toks.SEMICOLON, `Expect ';' after value.`);
-        return new PrintStmt(value);
+        return new Stmt.Print(value);
     }
     
     // exprStmt  → expression ";" ;
     expressionStatement() {
         let expr = this.expression();
         this.consume(toks.SEMICOLON, `Expect ';' after expression.`);
-        return new ExpressionStmt(expr);
+        return new Stmt.Expression(expr);
     }
 
     // expression → equality ;
@@ -85,7 +85,7 @@ class Parser {
             // expr
             let right = this.comparison();
             // ((a == b) == c) == d
-            expr = new BinaryExpr(expr, operator, right);
+            expr = new Expr.Binary(expr, operator, right);
         }
         return expr;
     }
@@ -99,7 +99,7 @@ class Parser {
             // expr
             let right = this.addition();
             // (a > b) < c
-            expr = new BinaryExpr(expr, operator, right);
+            expr = new Expr.Binary(expr, operator, right);
         }
         return expr;
     }
@@ -112,7 +112,7 @@ class Parser {
             // expr
             let right = this.multiplication();
             // (a + b) - c
-            expr = new BinaryExpr(expr, operator, right);
+            expr = new Expr.Binary(expr, operator, right);
         }
         return expr;
     }
@@ -125,7 +125,7 @@ class Parser {
             // expr
             let right = this.unary();
             // (a + b) - c
-            expr = new BinaryExpr(expr, operator, right);
+            expr = new Expr.Binary(expr, operator, right);
         }
         return expr;
     }
@@ -137,21 +137,21 @@ class Parser {
             let operator = this.previous();
             // expr
             let right = this.unary();
-            return new UnaryExpr(operator, right);
+            return new Expr.Unary(operator, right);
         }
         return this.primary();
     }
     // primary → NUMBER | STRING | "false" | "true" | "nil"
     //         | "(" expression ")" ;
     primary() {
-        if (this.match(toks.FALSE)) return new LiteralExpr(false);
-        if (this.match(toks.TRUE)) return new LiteralExpr(true);
-        if (this.match(toks.NIL)) return new LiteralExpr(null);
+        if (this.match(toks.FALSE)) return new Expr.Literal(false);
+        if (this.match(toks.TRUE)) return new Expr.Literal(true);
+        if (this.match(toks.NIL)) return new Expr.Literal(null);
         if (this.match(toks.NUMBER, toks.STRING)){
-            return new LiteralExpr(this.previous().literal);
+            return new Expr.Literal(this.previous().literal);
         }
         if (this.match(toks.IDENTIFIER)) {
-            return new VariableExpr(this.previous());
+            return new Expr.Variable(this.previous());
         }
         if (this.match(toks.LEFT_PAREN)) {
             let expr = this.expression();

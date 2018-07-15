@@ -1,9 +1,9 @@
-class Stmt {
+class Base {
     accept(visitor) {
     }
 }
 
-class ExpressionStmt extends Stmt {
+class Expression extends Base {
     constructor(expression) {
         super();
         this.expression = expression;
@@ -13,7 +13,7 @@ class ExpressionStmt extends Stmt {
     }
 }
 
-class PrintStmt extends Stmt {
+class Print extends Base {
     constructor(expression) {
         super();
         this.expression = expression;
@@ -23,7 +23,7 @@ class PrintStmt extends Stmt {
     }
 }
 
-class VarStmt extends Stmt {
+class Var extends Base {
     constructor(name, initialiser) {
         //      tok,  expr
         super();
@@ -34,7 +34,7 @@ class VarStmt extends Stmt {
         return visitor.visitVarStmt(this);
     }
 }
-class NullStmt extends Stmt {
+class Null extends Base {
     constructor() {
         //      tok,  expr
         super();
@@ -44,17 +44,17 @@ class NullStmt extends Stmt {
     }
 }
 
-// class FunctionStmt extends Stmt {
+// class FunctionStmt extends Base {
 //     constructor(name, parameters, body) {
 //         super();
-//         //      tok , tok[],      Stmt[]
+//         //      tok , tok[],      Base[]
 //     }
 // }
 
 module.exports = {
-    Stmt,
-    ExpressionStmt,
-    PrintStmt,
-    VarStmt,
-    NullStmt
+    Base,
+    Expression,
+    Print,
+    Var,
+    Null
 }
