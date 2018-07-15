@@ -1,5 +1,6 @@
+const { ExprVisitor } = require('./ExprVisitor');
 // an expression visitor
-class AstPrinter {
+class AstPrinter extends ExprVisitor{
     print(expr) {
         return expr.accept(this);
     }
@@ -12,6 +13,7 @@ class AstPrinter {
     visitLiteralExpr(expr) {
         if (expr.value == null) return "nil";
         // TODO: check if toString() is necessary
+        if (typeof expr.value === 'string') return `"${expr.value}"`;
         return expr.value;
     }
     visitUnaryExpr(expr) {

@@ -1,8 +1,14 @@
 let Token = require('./Token.js');
 let { toks } = require('./loxLibs.js');
 
-class BinaryExpr {
+class Expr {
+    accept(visitor) {
+    }
+}
+
+class BinaryExpr extends Expr {
     constructor(left, operator, right) {
+        super();
         this.left = left;
         this.operator = operator;
         this.right = right;
@@ -13,8 +19,9 @@ class BinaryExpr {
     }
 }
 
-class UnaryExpr {
+class UnaryExpr extends Expr {
     constructor(operator, right) {
+        super();
         this.operator = operator;
         this.right = right;
         this.type = 'Unary';
@@ -24,8 +31,9 @@ class UnaryExpr {
     }
 }
 
-class LiteralExpr {
+class LiteralExpr extends Expr {
     constructor(value) {
+        super();
         this.value = value;
         this.type = 'Literal';
     }
@@ -34,8 +42,9 @@ class LiteralExpr {
     }
 }
 
-class GroupingExpr {
+class GroupingExpr extends Expr {
     constructor(expression) {
+        super();
         this.expression = expression;
         this.type = 'Grouping';
     }

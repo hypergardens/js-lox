@@ -1,6 +1,8 @@
-let { toks } = require('./loxLibs');
 let { UnaryExpr, LiteralExpr, BinaryExpr, GroupingExpr } = require('./Expr');
-let { Scanner } = require('./Scanner');
+let { PrintStmt, ExpressionStmt } = require('./Stmt');
+
+let { toks } = require('./loxLibs');
+// let { Scanner } = require('./Scanner');
 let { AstPrinter } = require('./AstPrinter');
 let { Lox } = require('./Lox');
 
@@ -13,11 +15,44 @@ class Parser {
         this.tokens = tokens;
         this.current = 0;
     }
+    parse() {
+        try {
+            let statements = [];
+            while (!this.isAtEnd()) {
+                statements.push(this.statement());
+            }
+            return statements;
+        } catch (e) {
+            console.error(e);
+            return null;
+        }
+    }
+    
+    // statement → exprStmt
+    //       | printStmt ;
+    statement() {
+        if (this.match(toks.PRINT)) return this.printStatement();
+        return expressionStatement();
+    }
+    
+    // printStmt → "print" expression ";" ;
+    printStatement() {
+        let value = this.expression();
+        this.consume(toks.SEMICOLON, `Expect ';' after value.`);
+        return new PrintStmt(value);
+    }
+
     // expression → equality ;
     expression() {
         return this.equality();
     }
-
+    
+    expressionStatement() {
+        let expr = this.expression();
+        this.consume(toks.SEMICOLON, `Expect ';' after expression.`);
+        return new ExpressionStmt(expr);
+    }
+    
     // equality → comparison ( ( "!=" | "==" ) comparison )* ;
     equality() {
         let expr = this.comparison();
@@ -97,6 +132,8 @@ class Parser {
             this.consume(toks.RIGHT_PAREN, "Expect ')' after expression.");
             return new GroupingExpr(expr);
         }
+
+        throw this.error(this.peek(), "Expect expression");
     }
     match(...types) {
         for (let type of types) {
@@ -138,17 +175,29 @@ class Parser {
     }
     error(token, message) {
         Lox.error(token, message);
-        // HACK: figure this out
         return new ParseError();
     }
-}
-let loxScanner = new Scanner(`
-2 + (3 + 4)
-`);
-loxScanner.scanTokens();
-console.log(loxScanner.tokens);
-let loxParser = new Parser(loxScanner.tokens);
-let expr = loxParser.expression();
-let printer = new AstPrinter();
-console.log(expr.accept(printer));
+    synchronise() {
+        this.advance();
 
+        while (!this.isAtEnd()) {
+            if (this.previous().type == toks.SEMICOLON) return;
+
+            switch (this.peek().type) {
+                case tons.CLASS:
+                case tons.FUN:
+                case tons.VAR:
+                case tons.FOR:
+                case tons.IF:
+                case tons.WHILE:
+                case tons.PRINT:
+                case tons.RETURN:
+                    return;
+              }
+        
+            this.advance();
+        }
+    }
+}
+
+module.exports = { Parser };
