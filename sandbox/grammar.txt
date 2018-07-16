@@ -1,16 +1,18 @@
-program   → statement* EOF ;
-
-statement → exprStmt
-          | printStmt ;
+program   → declaration* EOF ;
 
 declaration → varDecl
             | statement ;
 
 varDecl → "var" IDENTIFIER ( "=" expression )? ";" ;
+statement → exprStmt
+          | printStmt ;
+
+
 exprStmt  → expression ";" ;
 printStmt → "print" expression ";" ;
 
 expression → assignment ;
+
 assignment → IDENTIFIER "=" assignment
            | equality ;
 
