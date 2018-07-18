@@ -34,6 +34,41 @@ class Var extends Base {
         return visitor.visitVarStmt(this);
     }
 }
+
+class If extends Base {
+    constructor(condition, thenBranch, elseBranch) {
+        //      expr       stmt        stmt
+        super();
+        this.condition = condition;
+        this.thenBranch = thenBranch;
+        this.elseBranch = elseBranch;
+    }
+    accept(visitor) {
+        return visitor.visitIfStmt(this);
+    }
+}
+
+class While extends Base {
+    constructor(condition, body) {
+        //      expr       stmt
+        super();
+        this.condition = condition;
+        this.body = body;
+    }
+    accept(visitor) {
+        return visitor.visitWhileStmt(this);
+    }
+}
+class Block extends Base {
+    constructor(statements) {
+        super();
+        this.statements = statements;
+    }
+    accept(visitor) {
+        return visitor.visitBlockStmt(this);
+    }
+}
+
 class Null extends Base {
     constructor() {
         //      tok,  expr
@@ -56,5 +91,8 @@ module.exports = {
     Expression,
     Print,
     Var,
+    Block,
+    If,
+    While,
     Null
 }

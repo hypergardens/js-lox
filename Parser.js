@@ -47,11 +47,49 @@ class Parser {
         return new Stmt.Var(name, initialiser);
     }
 
-    // statement → printStmt
-    //           | exprStmt ;
+    // statement → exprStmt
+    //           | ifStmt
+    //           | printStmt
+    //           | whileStmt
+    //           | block ;
     statement() {
+        if (this.match(toks.IF)) return this.ifStatement();
+        if (this.match(toks.WHILE)) return this.whileStatement();
         if (this.match(toks.PRINT)) return this.printStatement();
+        if (this.match(toks.LEFT_BRACE)) return new Stmt.Block(this.block());
         return this.expressionStatement();
+    }
+
+    // block → "{" declaration* "}"
+    block() {
+        let statements = [];
+        while (!this.check(toks.RIGHT_BRACE) && !this.isAtEnd()) {
+            statements.push(this.declaration());
+        }
+        this.consume(toks.RIGHT_BRACE, "Expect '}' after block.")
+        return statements;
+    }
+
+    // whileStmt → "while" "(" expression ")" statement;
+    whileStatement() {
+        this.consume(toks.LEFT_PAREN, "Expected '(' after while.");
+        let condition = this.expression();
+        this.consume(toks.RIGHT_PAREN, "Expected ')' after condition.");
+        let body = this.statement();
+        return new Stmt.While(condition, body);
+    }
+
+    // ifStmt    → "if" "(" expression ")" statement ( "else" statement )? ;
+    ifStatement() {
+        this.consume(toks.LEFT_PAREN, "Expect '(' after 'if'.");
+        let condition = this.expression();
+        this.consume(toks.RIGHT_PAREN, "Expect ')' after condition.");
+        let thenBranch = this.statement();
+        let elseBranch = null;
+        if (this.match(toks.ELSE)) {
+            elseBranch = this.statement();
+        }
+        return new Stmt.If(condition, thenBranch, elseBranch);
     }
     
     // printStmt → "print" expression ";" ;
@@ -69,22 +107,53 @@ class Parser {
     }
 
     // expression → assignment ;
-    // assignment → identifier "=" assignment
-    //            | equality ;
     expression() {
         return this.assignment();
     }
+
+    // assignment → IDENTIFIER "=" assignment
+    //            | logic_or ;
     assignment() {
-        let expr = this.equality();
+        let expr = this.or();
         if (this.match(toks.EQUAL)) {
             let equalsToken = this.previous();
             let rightValue = this.assignment();
-
+            
             if (expr instanceof Expr.Variable) {
                 let nameToken = expr.name;
                 return new Expr.Assign(nameToken, rightValue);
             }
             this.error(equalsToken, "Invalid assignment target.");
+        }
+        return expr;
+    }
+
+    // logic_or   → logic_and ( "or" logic_and )* ;
+    or() {
+        let expr = this.and();
+
+        while (this.match(toks.OR)) {
+            // token
+            let operator = this.previous();
+            // expr
+            let right = this.and();
+            // ((a or b) or c)
+            expr = new Expr.Logical(expr, operator, right);
+        }
+        return expr;
+    }
+
+    // logic_and  → equality ( "and" equality )* ;
+    and() {
+        let expr = this.equality();
+
+        while (this.match(toks.AND)) {
+            // token
+            let operator = this.previous();
+            // expr
+            let right = this.equality();
+            // ((a and b) and c)
+            expr = new Expr.Logical(expr, operator, right);
         }
         return expr;
     }

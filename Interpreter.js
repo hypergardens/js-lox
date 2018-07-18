@@ -23,6 +23,18 @@ class Interpreter extends TreeVisitor {
     visitLiteralExpr(expr) {
         return expr.value;
     }
+    visitLogicalExpr(expr) {
+        let left = this.evaluate(expr.left);
+        if (expr.operator.type === toks.OR) {
+            // truthy and x -> truthy
+            if (this.isTruthy(left)) return left;
+        } else if (expr.operator.type === toks.AND) {
+            // falsey and x -> falsey
+            if (!this.isTruthy(left)) return left;
+        }
+
+        return this.evaluate(expr.right);
+    }
     visitGroupingExpr(expr) {
         return this.evaluate(expr.expression);
     }
@@ -104,6 +116,37 @@ class Interpreter extends TreeVisitor {
     execute(stmt) {
         return stmt.accept(this);
     }
+    executeBlock(statements, environment) {
+        let previous = this.environment;
+        try {
+            this.environment = environment;
+            for (let statement of statements) {
+                this.execute(statement);
+            }
+        } finally {
+            // LEARN: environments handled like ctx states
+            // pay attention to this way of handling things. Very sleek
+            this.environment = previous;
+        }
+    }   
+    visitBlockStmt(stmt) {
+        this.executeBlock(stmt.statements, new Environment(this.environment));
+        return null;
+    }
+    visitIfStmt(stmt) {
+        if (this.isTruthy(this.evaluate(stmt.condition))) {
+            this.execute(stmt.thenBranch);
+        } else if (stmt.elseBranch !== null) {
+            this.execute(stmt.elseBranch);
+        }
+        return null;
+    }
+    visitWhileStmt(stmt) {
+        while (this.isTruthy(this.evaluate(stmt.condition))) {
+            this.execute(stmt.body);
+        }
+        return null;
+    }
     visitNullStmt(stmt) {
         return null;
     }
@@ -155,21 +198,21 @@ let { Parser } = require('./Parser');
 let { AstPrinter } = require('./AstPrinter');
 
 let loxScanner = new Scanner(`
-    print "start!";
-    var b;
-    var a = b = 5;
-    print a;
-    a = 35;
-    print a;
-    print b;
-    a = b = "muffin";
-    print a + b;
+    var i = 0;
+    while (i < 30) {
+        print i;
+        i = i + 1;
+    }
 `);
 loxScanner.scanTokens();
-let statements = new Parser(loxScanner.tokens).parse();
+// console.log(loxScanner.tokens);
+
+let program = new Parser(loxScanner.tokens).parse();
 let interpreter = new Interpreter();
 let printer = new AstPrinter();
-interpreter.interpret(statements);
-console.log(printer.print(statements));
+// console.log(program);
+
+console.log(printer.print(program));
+interpreter.interpret(program);
 
 // console.log("end parsing");

@@ -4,6 +4,10 @@ let Stmt = require('./Stmt');
 let { Token } = require('./Token');
 // an expression visitor
 class AstPrinter extends TreeVisitor{
+    constructor() {
+        super();
+        this.indentation = 0;
+    }
     print(statements) {
         let representation = ["["];
         for (let statement of statements) {
@@ -14,6 +18,22 @@ class AstPrinter extends TreeVisitor{
             }
         }
         return representation.join("\n") + "\n]";
+    }
+    visitBlockStmt(stmt) {
+        let args = ["BLOCK"]
+        this.indentation += 1;
+        for (let statement of stmt.statements) {
+            args.push(statement);
+            // args.push("\n" + "    ".repeat(this.indentation), statement);
+        }
+        this.indentation -= 1;
+        return this.parenthesise(...args);
+    }
+    visitIfStmt(stmt) {
+        return this.parenthesise("IF", stmt.condition, "THEN", stmt.thenBranch, "ELSE", stmt.elseBranch);
+    }
+    visitWhileStmt(stmt) {
+        return this.parenthesise("WHILE", stmt.condition, "DO", stmt.body);
     }
     visitVarStmt(stmt) {
         return this.parenthesise("VAR", stmt.name, stmt.initialiser);
@@ -29,6 +49,9 @@ class AstPrinter extends TreeVisitor{
     }
     visitAssignExpr(expr) {
         return this.parenthesise("ASSIGN", expr.name, expr.value);
+    }
+    visitLogicalExpr(expr) {
+        return this.parenthesise(expr.operator.lexeme, expr.left, expr.right);
     }
     visitBinaryExpr(expr) {
         return this.parenthesise(expr.operator.lexeme, expr.left, expr.right);
@@ -70,6 +93,9 @@ class AstPrinter extends TreeVisitor{
                 strArr.push(arg);
             } else if (arg instanceof Expr.Base) {
                 // arg is expr
+                strArr.push(arg.accept(this));
+            } else if (arg instanceof Stmt.Base) {
+                // arg is stmt
                 strArr.push(arg.accept(this));
             } else if (arg instanceof Token) {
                 // arg is token

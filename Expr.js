@@ -6,6 +6,19 @@ class Base {
     }
 }
 
+class Logical extends Base {
+    constructor(left, operator, right) {
+        super();
+        this.left = left;
+        this.operator = operator;
+        this.right = right;
+        this.type = 'Logical';
+    }
+    accept(visitor) {
+        return visitor.visitLogicalExpr(this);
+    }
+}
+
 class Binary extends Base {
     constructor(left, operator, right) {
         super();
@@ -112,6 +125,7 @@ module.exports = {
     Assign,
     Base,
     Unary,
+    Logical,
     Literal,
     Binary,
     Grouping,
