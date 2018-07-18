@@ -68,6 +68,8 @@ class Parser {
     //                 expression? ";"
     //                 expression? ")" statement ;
     forStatement() {
+        console.log('entering for');
+        
         this.consume(toks.LEFT_PAREN, "Expect '(' after 'for'.");
         let initialiser;
         if (this.match(toks.SEMICOLON)) {
@@ -97,11 +99,17 @@ class Parser {
             // TEST: test this heavily, desugaring can be picky
             body = new Stmt.Block([body, new Stmt.Expression(increment)]);
         }
-        if (condition === null) condition = new Expr.Literal(true);
+        
+        if (condition === null){
+            condition = new Expr.Literal(true);
+        }
         body = new Stmt.While(condition, body);
+        
         if (initialiser !== null) {
             body = new Stmt.Block([initialiser, body]);
         }
+
+        return body;
     }
 
     // block → "{" declaration* "}"

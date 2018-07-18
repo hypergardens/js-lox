@@ -198,20 +198,20 @@ let { Parser } = require('./Parser');
 let { AstPrinter } = require('./AstPrinter');
 
 let desugarCode = `
-// var i = 10;
-// while (i > 0) {
-//     print i + " seconds to Mars";
-//     i = i - 1;
-// }
-
-for(var i=10; i>0; i = i - 1) {
-    print i + " seconds to Mars";
-}
+    // print "While loop:";
+    // var i = 3;
+    // while (i > 0) {
+    //     print i + " seconds to Mars";
+    //     i = i - 1;
+    // }
+    
+    print "For loop:";
+    for(var i=3; i>0; i = i - 1) 
+        print i + " seconds to Mars";
+    
 `
 
-let loxScanner = new Scanner(`
-// print 5;
-`);
+let loxScanner = new Scanner(desugarCode);
 loxScanner.scanTokens();
 // console.log(loxScanner.tokens);
 
