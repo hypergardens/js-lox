@@ -198,10 +198,14 @@ let { Parser } = require('./Parser');
 let { AstPrinter } = require('./AstPrinter');
 
 let loxScanner = new Scanner(`
-    var i = 0;
-    while (i < 30) {
-        print i;
-        i = i + 1;
+    var i = 10;
+    while (i > 0) {
+        print i + " seconds to Mars";
+        i = i - 1;
+    }
+
+    for(var i=10; i>0; i = i - 1) {
+        print i + " seconds to Mars";
     }
 `);
 loxScanner.scanTokens();

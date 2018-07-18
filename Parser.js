@@ -48,16 +48,60 @@ class Parser {
     }
 
     // statement → exprStmt
+    //           | forStmt
     //           | ifStmt
-    //           | printStmt
     //           | whileStmt
+    //           | printStmt
     //           | block ;
     statement() {
+        if (this.match(toks.FOR)) return this.forStatement();
         if (this.match(toks.IF)) return this.ifStatement();
         if (this.match(toks.WHILE)) return this.whileStatement();
         if (this.match(toks.PRINT)) return this.printStatement();
         if (this.match(toks.LEFT_BRACE)) return new Stmt.Block(this.block());
         return this.expressionStatement();
+    }
+
+
+    // forStmt    → "for" "("
+    //                 ( varDecl | exprStmt | ";" )
+    //                 expression? ";"
+    //                 expression? ")" statement ;
+    forStatement() {
+        this.consume(toks.LEFT_PAREN, "Expect '(' after 'for'.");
+        let initialiser;
+        if (this.match(toks.SEMICOLON)) {
+            initialiser = null;
+        } else if (this.match(toks.VAR)) {
+            initialiser = this.varDecl();
+        } else {
+            initialiser = this.expressionStatement();
+        }
+
+        let condition = null;
+        if (!this.check(toks.SEMICOLON)) {
+            condition = this.expression();
+        }
+        this.consume(toks.SEMICOLON, "Expect ';' after loop condition.");
+        
+        let increment = null;
+        if (!this.check(toks.RIGHT_PAREN)) {
+            increment = this.expression();
+        }
+        this.consume(toks.RIGHT_PAREN, "Expect ')' after 'for' clauses.");
+
+        let body = this.statement();
+
+        // desugaring
+        if (increment !== null) {
+            // TEST: test this heavily, desugaring can be picky
+            body = new Stmt.Block([body, new Stmt.Expression(increment)]);
+        }
+        if (condition === null) condition = new Expr.Literal(true);
+        body = new Stmt.While(condition, body);
+        if (initialiser !== null) {
+            body = new Stmt.Block([initialiser, body]);
+        }
     }
 
     // block → "{" declaration* "}"
