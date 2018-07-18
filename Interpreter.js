@@ -197,18 +197,16 @@ let { Scanner } = require('./Scanner');
 let { Parser } = require('./Parser');
 let { AstPrinter } = require('./AstPrinter');
 
+new Scanner("asdf")
+
 let desugarCode = `
-    // print "While loop:";
-    // var i = 3;
-    // while (i > 0) {
-    //     print i + " seconds to Mars";
-    //     i = i - 1;
-    // }
-    
-    print "For loop:";
-    for(var i=3; i>0; i = i - 1) 
-        print i + " seconds to Mars";
-    
+    var a = "global";
+    {
+        print a;
+        a = "local";
+        print a;
+    }
+    print a;    
 `
 
 let loxScanner = new Scanner(desugarCode);
@@ -220,7 +218,7 @@ let interpreter = new Interpreter();
 let printer = new AstPrinter();
 // console.log(program);
 
-console.log(printer.print(program));
+// console.log(printer.print(program));
 interpreter.interpret(program);
 
 // console.log("end parsing");

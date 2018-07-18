@@ -68,8 +68,6 @@ class Parser {
     //                 expression? ";"
     //                 expression? ")" statement ;
     forStatement() {
-        console.log('entering for');
-        
         this.consume(toks.LEFT_PAREN, "Expect '(' after 'for'.");
         let initialiser;
         if (this.match(toks.SEMICOLON)) {
