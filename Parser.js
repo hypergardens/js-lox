@@ -24,10 +24,12 @@ class Parser {
         return statements;
     }
     
-    // declaration → varDecl
+    // declaration → funDecl
+    //             | varDecl
     //             | statement ;
     declaration() {
         try {
+            if (this.match(toks.FUN)) return this.funDecl(`function`);
             if (this.match(toks.VAR)) return this.varDecl();
             return this.statement();
         } catch (e) {
@@ -36,6 +38,26 @@ class Parser {
             return null;
         }
     }
+    // funDecl → "fun" function ;
+    funDecl(kind) {
+        let name = this.consume(toks.IDENTIFIER, `Expect ${kind} name.`);
+        this.consume(toks.LEFT_PAREN, `Expect '(' after ${kind} name.`);
+        let parameters = [];
+        if (!this.check(toks.RIGHT_PAREN)) {
+            do {
+                if (parameters.length >= 8) {
+                    this.error(this.peek(), `Cannot have more than 8 parameters.`);
+                }
+                parameters.push(this.consume(toks.IDENTIFIER, `Expect parameter name.`));
+            } while (this.match(toks.COMMA));
+        }
+        this.consume(toks.RIGHT_PAREN, `Expect ')' after parameters.`);
+        this.consume(toks.LEFT_BRACE, `Expect '{' before ${kind} body.`);
+        let body = this.block();
+        return new Stmt.Function(name, parameters, body);
+    }
+    // function → IDENTIFIER "(" parameters? ")" block;
+    // parameters → IDENTIFIER ( "," IDENTIFIER )* ;
     // varDecl → "var" IDENTIFIER ( "=" expression )? ";" ;
     varDecl() {
         let name = this.consume(toks.IDENTIFIER, `Expect variable name.`);
@@ -48,20 +70,32 @@ class Parser {
     }
 
     // statement → exprStmt
-    //           | forStmt
     //           | ifStmt
-    //           | whileStmt
+    //           | forStmt
     //           | printStmt
+    //           | returnStmt
+    //           | whileStmt
     //           | block ;
     statement() {
         if (this.match(toks.FOR)) return this.forStatement();
         if (this.match(toks.IF)) return this.ifStatement();
         if (this.match(toks.WHILE)) return this.whileStatement();
+        if (this.match(toks.RETURN)) return this.returnStatement();
         if (this.match(toks.PRINT)) return this.printStatement();
         if (this.match(toks.LEFT_BRACE)) return new Stmt.Block(this.block());
         return this.expressionStatement();
     }
-
+    
+    // returnStmt → "return" expression? ";" ;
+    returnStatement() {
+        let value = null;
+        let keyword = this.previous();
+        if (!this.match(toks.SEMICOLON)) {
+            value = this.expression();
+        }
+        this.consume(toks.SEMICOLON, `Expect ';' after return value;`)
+        return new Stmt.Return(keyword, value);
+    }
 
     // forStmt    → "for" "("
     //                 ( varDecl | exprStmt | ";" )
@@ -317,7 +351,7 @@ class Parser {
         if (this.match(toks.LEFT_PAREN)) {
             let expr = this.expression();
             this.consume(toks.RIGHT_PAREN, "Expect ')' after expression.");
-            return new GroupingExpr(expr);
+            return new Expr.Grouping(expr);
         }
 
         throw this.error(this.peek(), "Expect expression");

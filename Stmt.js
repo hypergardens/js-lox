@@ -23,6 +23,17 @@ class Print extends Base {
     }
 }
 
+class Return extends Base {
+    constructor(keyword, value) {
+        super();
+        this.keyword = keyword;
+        this.value = value;
+    }
+    accept(visitor) {
+        return visitor.visitReturnStmt(this);
+    }
+}
+
 class Var extends Base {
     constructor(name, initialiser) {
         //      tok,  expr
@@ -32,6 +43,19 @@ class Var extends Base {
     }
     accept(visitor) {
         return visitor.visitVarStmt(this);
+    }
+}
+
+class Function extends Base {
+    constructor(name, parameters, body) {
+        super();
+        this.name = name;
+        this.parameters = parameters;
+        this.body = body;
+        this.type = 'Function';
+    }
+    accept(visitor) {
+        return visitor.visitFunctionStmt(this);
     }
 }
 
@@ -87,12 +111,14 @@ class Null extends Base {
 // }
 
 module.exports = {
+    Block,
     Base,
     Expression,
-    Print,
-    Var,
-    Block,
+    Function,
     If,
+    Null,
+    Print,
+    Return,
+    Var,
     While,
-    Null
 }

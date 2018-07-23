@@ -38,8 +38,14 @@ class AstPrinter extends TreeVisitor{
     visitVarStmt(stmt) {
         return this.parenthesise("VAR", stmt.name, stmt.initialiser);
     }
+    visitFunctionStmt(stmt) {
+        return this.parenthesise("FUN", stmt.name, stmt.parameters, stmt.body);
+    }
     visitPrintStmt(stmt) {
         return this.parenthesise("PRINT", stmt.expression);
+    }
+    visitReturnStmt(stmt) {
+        return this.parenthesise("RETURN", stmt.expression);
     }
     visitExpressionStmt(stmt) {
         return this.parenthesise("EXPR", stmt.expression);
@@ -51,7 +57,7 @@ class AstPrinter extends TreeVisitor{
         return this.parenthesise("ASSIGN", expr.name, expr.value);
     }
     visitCallExpr(expr) {
-        return this.parenthesise("CALL", expr.callee, ...expr.args);
+        return this.parenthesise("CALL", expr.callee, expr.args);
     }
     visitLogicalExpr(expr) {
         return this.parenthesise(expr.operator.lexeme, expr.left, expr.right);
@@ -92,7 +98,10 @@ class AstPrinter extends TreeVisitor{
             if (i>0) strArr.push(" ");
             let arg = args[i];
             // arg is string
-            if (typeof arg === 'string') {
+            if (Array.isArray(arg)) {
+                // HACK: split array into units recursively
+                strArr.push(this.parenthesise(...arg));
+            } else if (typeof arg === 'string') {
                 strArr.push(arg);
             } else if (arg instanceof Expr.Base) {
                 // arg is expr
@@ -104,7 +113,6 @@ class AstPrinter extends TreeVisitor{
                 // arg is token
                 // HACK: should probably use a proper expression
                 // console.log(arg);
-                
                 strArr.push(arg.lexeme);
             }
         }

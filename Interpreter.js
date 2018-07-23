@@ -4,6 +4,7 @@ let { LoxRuntimeError } = require('./LoxRuntimeError');
 let { Lox } = require('./Lox');
 let { Environment } = require('./Environment');
 let { LoxCallable } = require('./LoxCallable');
+let { LoxFunction } = require('./LoxFunction');
 
 function makeNative(arity, func) {
     return new class extends LoxCallable {
@@ -30,11 +31,9 @@ class Interpreter extends TreeVisitor {
         this.globals.define("clock", makeNative(0, (interpreter, args) => {
             return new Date().getTime();
         }));
-        // this.globals.define("abs", makeNative(1, (interpreter, args) => {
-        //     console.log('interpreter', interpreter);
-        //     console.log('args', args);
-        //     return Math.abs(interpreter.evaluate(args[0]));
-        // }));
+        this.globals.define("abs", makeNative(1, (interpreter, args) => {
+            return Math.abs(interpreter.evaluate(args[0]));
+        }));
     }
     interpret(statements) {
         try {
@@ -64,6 +63,11 @@ class Interpreter extends TreeVisitor {
     }
     visitGroupingExpr(expr) {
         return this.evaluate(expr.expression);
+    }
+    visitAssignExpr(expr) {
+        let value = this.evaluate(expr.value);
+        this.environment.assign(expr.name, value);
+        return value;
     }
     visitBinaryExpr(expr) {
         let left = this.evaluate(expr.left);
@@ -125,7 +129,8 @@ class Interpreter extends TreeVisitor {
         if (args.length != func.arity()) {
             throw new LoxRuntimeError(expr.paren, `Expected ${func.arity()} arguments but got ${args.length}`);
         }
-        return func.loxCall(args);
+
+        return func.loxCall(this, args);
     }
     visitUnaryExpr(expr) {
         let right = this.evaluate(expr.right);
@@ -198,6 +203,11 @@ class Interpreter extends TreeVisitor {
         this.evaluate(stmt.expression);
         return null;
     }
+    visitFunctionStmt(stmt) {
+        let func = new LoxFunction(stmt);
+        this.environment.define(stmt.name.lexeme, func);
+        return null;
+    }
     visitPrintStmt(stmt) {
         let value = this.evaluate(stmt.expression);
         console.log(">", this.stringify(value));
@@ -211,10 +221,13 @@ class Interpreter extends TreeVisitor {
         this.environment.define(stmt.name.lexeme, value);
         return null;
     }
-    visitAssignExpr(expr) {
-        let value = this.evaluate(expr.value);
-        this.environment.assign(expr.name, value);
-        return value;
+    visitReturnStmt(stmt) {
+        let value = null;
+        if (stmt.value !== null) {
+            value = this.evaluate(stmt.value);
+        }
+        // HACK: throws a custom object
+        throw {isReturn:true, value:value};
     }
     isTruthy(obj) {
         if (obj === null) return false;
@@ -244,9 +257,16 @@ let { AstPrinter } = require('./AstPrinter');
 new Scanner("asdf")
 
 let desugarCode = `
-    print clock();
-    print abs(4);
-    print abs(-3);
+    fun fibonacci(n) {
+        if (n <= 1) return n;
+        return fibonacci(n - 2) + fibonacci(n - 1);
+    }
+    var start = clock();
+    for (var i = 0; i < 20; i = i + 1) {
+        print fibonacci(i);
+    }
+    var end = clock();
+    print "time taken: " + (clock() - start);
 `
 
 let loxScanner = new Scanner(desugarCode);
@@ -256,7 +276,7 @@ loxScanner.scanTokens();
 let program = new Parser(loxScanner.tokens).parse();
 let interpreter = new Interpreter();
 let printer = new AstPrinter();
-console.log(program);
+// console.log(program[0].body);
 
 console.log(printer.print(program));
 interpreter.interpret(program);

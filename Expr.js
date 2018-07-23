@@ -25,6 +25,7 @@ class Call extends Base {
         this.callee = callee;
         this.paren = paren;
         this.args = args;
+        this.type = 'Call';
     }
     accept(visitor) {
         return visitor.visitCallExpr(this);
@@ -43,6 +44,7 @@ class Binary extends Base {
         return visitor.visitBinaryExpr(this);
     }
 }
+
 
 class Unary extends Base {
     constructor(operator, right) {
