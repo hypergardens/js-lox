@@ -50,6 +50,9 @@ class AstPrinter extends TreeVisitor{
     visitAssignExpr(expr) {
         return this.parenthesise("ASSIGN", expr.name, expr.value);
     }
+    visitCallExpr(expr) {
+        return this.parenthesise("CALL", expr.callee, ...expr.args);
+    }
     visitLogicalExpr(expr) {
         return this.parenthesise(expr.operator.lexeme, expr.left, expr.right);
     }

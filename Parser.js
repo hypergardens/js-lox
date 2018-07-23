@@ -247,7 +247,8 @@ class Parser {
         }
         return expr;
     }
-
+    
+    // multiplication → unary ( ( "/" | "*" ) unary )* ;
     multiplication() {
         let expr = this.unary();
         while (this.match(toks.SLASH, toks.STAR)) {
@@ -260,8 +261,9 @@ class Parser {
         }
         return expr;
     }
+
     // unary → ( "!" | "-" ) unary
-    //       | primary ;
+    //       | call;
     unary() {
         if (this.match(toks.BANG, toks.MINUS)) {
             // token
@@ -270,7 +272,35 @@ class Parser {
             let right = this.unary();
             return new Expr.Unary(operator, right);
         }
-        return this.primary();
+        return this.call();
+    }
+
+    // call → primary ( "(" arguments? ")" )*
+    call() {
+        let expr = this.primary();
+        while (true) {
+            if (this.match(toks.LEFT_PAREN)) {
+                expr = this.finishCall(expr);
+            } else {
+                break;
+            }
+        }
+        return expr;
+    }
+    // arguments → expression ( "," expression )* ;
+    finishCall(callee) {
+        let args = [];
+        let maxArgs = 8;
+        if (!this.check(toks.RIGHT_PAREN)) {
+            do {
+                if (args.length >= maxArgs) {
+                    this.error(this.peek(), `Cannot have more than ${maxArgs} args.`);
+                }
+                args.push(this.expression());
+            } while (this.match(toks.COMMA));
+        }
+        let paren = this.consume(toks.RIGHT_PAREN, "Expect ')' after args.");
+        return new Expr.Call(callee, paren, args);
     }
     // primary → NUMBER | STRING | "false" | "true" | "nil"
     //         | "(" expression ")" ;

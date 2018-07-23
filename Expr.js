@@ -19,6 +19,18 @@ class Logical extends Base {
     }
 }
 
+class Call extends Base {
+    constructor(callee, paren, args) {
+        super();
+        this.callee = callee;
+        this.paren = paren;
+        this.args = args;
+    }
+    accept(visitor) {
+        return visitor.visitCallExpr(this);
+    }
+}
+
 class Binary extends Base {
     constructor(left, operator, right) {
         super();
@@ -124,10 +136,11 @@ function createExprClass(name, fields) {
 module.exports = {
     Assign,
     Base,
-    Unary,
-    Logical,
-    Literal,
     Binary,
+    Call,
     Grouping,
+    Literal,
+    Logical,
+    Unary,
     Variable
 }

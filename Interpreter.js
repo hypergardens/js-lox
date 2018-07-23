@@ -3,11 +3,38 @@ let { toks } = require('./loxLibs');
 let { LoxRuntimeError } = require('./LoxRuntimeError');
 let { Lox } = require('./Lox');
 let { Environment } = require('./Environment');
+let { LoxCallable } = require('./LoxCallable');
+
+function makeNative(arity, func) {
+    return new class extends LoxCallable {
+        arity() { return arity; }
+        loxCall(interpreter, args) {
+            return func(interpreter, args);
+        }
+        toString() {return "<native fn>"};
+    }
+}
 
 class Interpreter extends TreeVisitor {
     constructor() {
         super();
-        this.environment = new Environment();
+        this.globals = new Environment();
+        this.environment = this.globals;
+        // this.globals.define("clock", new class extends LoxCallable {
+        //     arity() { return 0; }
+        //     loxCall(interpreter, args) {
+        //         return new Date().getTime();
+        //     }
+        //     toString() {return "<native fn>"};
+        // })
+        this.globals.define("clock", makeNative(0, (interpreter, args) => {
+            return new Date().getTime();
+        }));
+        // this.globals.define("abs", makeNative(1, (interpreter, args) => {
+        //     console.log('interpreter', interpreter);
+        //     console.log('args', args);
+        //     return Math.abs(interpreter.evaluate(args[0]));
+        // }));
     }
     interpret(statements) {
         try {
@@ -82,6 +109,23 @@ class Interpreter extends TreeVisitor {
                 throw new LoxRuntimeError(expr.operator, "Operands must be two numbers or two strings.");
         }
 
+    }
+    visitCallExpr(expr) {
+        // callee, paren<>, args[]
+        let callee = this.evaluate(expr.callee);
+        let args = [];
+        for (let arg of expr.args) {
+            args.push(this.evaluate(arg));
+        }
+        // HACK: no casting in JS?
+        let func = callee;
+        if (!(func instanceof LoxCallable)) {
+            throw new LoxRuntimeError(expr.paren, "Can only call functions and classes.");
+        }
+        if (args.length != func.arity()) {
+            throw new LoxRuntimeError(expr.paren, `Expected ${func.arity()} arguments but got ${args.length}`);
+        }
+        return func.loxCall(args);
     }
     visitUnaryExpr(expr) {
         let right = this.evaluate(expr.right);
@@ -200,13 +244,9 @@ let { AstPrinter } = require('./AstPrinter');
 new Scanner("asdf")
 
 let desugarCode = `
-    var a = "global";
-    {
-        print a;
-        a = "local";
-        print a;
-    }
-    print a;    
+    print clock();
+    print abs(4);
+    print abs(-3);
 `
 
 let loxScanner = new Scanner(desugarCode);
@@ -216,9 +256,9 @@ loxScanner.scanTokens();
 let program = new Parser(loxScanner.tokens).parse();
 let interpreter = new Interpreter();
 let printer = new AstPrinter();
-// console.log(program);
+console.log(program);
 
-// console.log(printer.print(program));
+console.log(printer.print(program));
 interpreter.interpret(program);
 
 // console.log("end parsing");
