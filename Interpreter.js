@@ -31,9 +31,9 @@ class Interpreter extends TreeVisitor {
         this.globals.define("clock", makeNative(0, (interpreter, args) => {
             return new Date().getTime();
         }));
-        this.globals.define("abs", makeNative(1, (interpreter, args) => {
-            return Math.abs(interpreter.evaluate(args[0]));
-        }));
+        // this.globals.define("abs", makeNative(1, (interpreter, args) => {
+        //     return Math.abs(interpreter.evaluate(args[0]));
+        // }));
     }
     interpret(statements) {
         try {
@@ -42,7 +42,7 @@ class Interpreter extends TreeVisitor {
             }
         } catch (e) {
             // HACK: this error is wonky
-            console.log(e.token, e.message);
+            // console.log(e.token, e.message);
             Lox.runtimeError(e.token, e);
         }
     }
@@ -204,7 +204,7 @@ class Interpreter extends TreeVisitor {
         return null;
     }
     visitFunctionStmt(stmt) {
-        let func = new LoxFunction(stmt);
+        let func = new LoxFunction(stmt, this.environment);
         this.environment.define(stmt.name.lexeme, func);
         return null;
     }
@@ -261,12 +261,18 @@ let desugarCode = `
         if (n <= 1) return n;
         return fibonacci(n - 2) + fibonacci(n - 1);
     }
-    var start = clock();
-    for (var i = 0; i < 20; i = i + 1) {
-        print fibonacci(i);
+    fun counter() {
+        var i = 0;
+        fun increment() {
+            i = i + 1;
+            print i;
+        }
+        return increment;
     }
-    var end = clock();
-    print "time taken: " + (clock() - start);
+    var x = counter();
+    print x();
+    print x();
+    print x();
 `
 
 let loxScanner = new Scanner(desugarCode);
