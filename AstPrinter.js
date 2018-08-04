@@ -78,6 +78,8 @@ class AstPrinter extends TreeVisitor{
         return this.parenthesise(expr.operator.lexeme, expr.right);
     }
     visitVariableExpr(expr) {
+        // WARN: HACK: which one is it?
+        // return expr.name;
         return expr.name.lexeme;
     }
     // parenthesise(name, ...exprs) {

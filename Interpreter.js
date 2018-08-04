@@ -257,22 +257,15 @@ let { AstPrinter } = require('./AstPrinter');
 new Scanner("asdf")
 
 let desugarCode = `
-    fun fibonacci(n) {
-        if (n <= 1) return n;
-        return fibonacci(n - 2) + fibonacci(n - 1);
-    }
-    fun counter() {
-        var i = 0;
-        fun increment() {
-            i = i + 1;
-            print i;
-        }
-        return increment;
-    }
-    var x = counter();
-    print x();
-    print x();
-    print x();
+
+fun fib(n) {
+    if (n < 2) return n;
+    return fib(n - 1) + fib(n - 2); 
+}
+var before = clock();
+print fib(40);
+var after = clock();
+print after - before;
 `
 
 let loxScanner = new Scanner(desugarCode);

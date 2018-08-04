@@ -69,6 +69,18 @@ class Literal extends Base {
     }
 }
 
+class Conditional extends Base {
+    constructor(cond, thenArm, elseArm) {
+        super();
+        this.cond = cond;
+        this.thenArm = thenArm;
+        this.elseArm = elseArm;
+    }
+    accept(visitor) {
+        return visitor.visitConditionalExpr(this);
+    }
+}
+
 class Grouping extends Base {
     constructor(expression) {
         super();
@@ -137,6 +149,7 @@ function createExprClass(name, fields) {
 
 module.exports = {
     Assign,
+    Conditional,
     Base,
     Binary,
     Call,

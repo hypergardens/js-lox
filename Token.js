@@ -10,7 +10,7 @@ class Token {
         this.line = line;
     }
     toString() {
-        return this.type + " " + this.lexeme + this.literal;
+        return this.type + " " + this.lexeme;
     }
 }
 
