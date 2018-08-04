@@ -5,19 +5,38 @@ let { Lox } = require('./Lox');
 let Parselets = require('./PrattParselets');
 
 
+let PRECEDENCE = {
+    ASSIGNMENT  : 10,
+    CONDITIONAL : 20,
+    SUM         : 30,
+    PRODUCT     : 40,
+    EXPONENT    : 50,
+    PREFIX      : 60,
+    POSTFIX     : 70,
+    CALL        : 80,
+}
+
+let code = `a ^ b ^ c`;
 class Parser {
     constructor(tokens) {
         this.tokens = tokens;
         this.current = 0;
         this.prefixParselets = {};
         this.infixParselets = {};
+        this.registerPrefixParselet(toks.IDENTIFIER, new Parselets.Variable(PRECEDENCE.PREFIX));
         this.prefix(toks.MINUS);
         this.prefix(toks.PLUS);
         this.prefix(toks.TILDE);
         this.prefix(toks.BANG);
-        this.registerPrefixParselet(toks.IDENTIFIER, new Parselets.Variable());
-        this.registerInfixParselet(toks.PLUS, new Parselets.Plus());
-        this.registerInfixParselet(toks.STAR, new Parselets.Times());
+        this.binary(toks.PLUS, PRECEDENCE.SUM);
+        this.binary(toks.STAR, PRECEDENCE.PRODUCT);
+        this.binary(toks.CARET, PRECEDENCE.EXPONENT, true);
+    }
+    prefix(tokenType) {
+        this.registerPrefixParselet(tokenType, new Parselets.PrefixOperator(PRECEDENCE.PREFIX));
+    }
+    binary(tokenType, precedence, rightAssoc=false) {
+        this.registerInfixParselet(tokenType, new Parselets.BinaryOperator(precedence, rightAssoc));
     }
     registerPrefixParselet(tokenType, parselet) {
         this.prefixParselets[tokenType] = parselet;
@@ -45,11 +64,8 @@ class Parser {
     }
     getPrecedence() {
         let infixParselet = this.infixParselets[this.peek().type];
-        if (infixParselet != undefined) return infixParselet.getPrecedence();
+        if (infixParselet != undefined) return infixParselet.precedence;
         return 0;
-    }
-    prefix(tokenType) {
-        this.registerPrefixParselet(tokenType, new Parselets.PrefixOperator());
     }
     // primary() {
     //     if (this.match(toks.FALSE)) return new Expr.Literal(false);
@@ -123,7 +139,6 @@ class Parser {
 let { Scanner } = require('./Scanner');
 let { AstPrinter } = require('./AstPrinter');
 
-let code = `a + b * c + d + e`;
 
 let loxScanner = new Scanner(code);
 loxScanner.scanTokens();

@@ -1,66 +1,51 @@
 const Expr = require('./Expr') 
 let { toks } = require('./loxLibs');
 
-class Prefix {
-    parse(parser, token) {}
+class Base {
+    constructor(precedence) {
+        this.precedence = precedence;
+    }
 }
-class Variable extends Prefix {
+
+class Variable extends Base {
     parse(parser, token) {
         return new Expr.Variable(token);
     }
 }
-class PrefixOperator extends Prefix {
+
+class PrefixOperator extends Base {
     parse(parser, token) {
-        let right = parser.parseExpression();
+        let right = parser.parseExpression(this.precedence);
         return new Expr.Unary(token, right);
     }
 }
 
-let precedence = {
-    ASSIGNMENT  : 10,
-    CONDITIONAL : 20,
-    SUM         : 30,
-    PRODUCT     : 40,
-    EXPONENT    : 50,
-    PREFIX      : 60,
-    POSTFIX     : 70,
-    CALL        : 80,
-}
-
-class Infix {
-    parse(parser, left, token) {}
-    getPrecedence() {}
-}
-class BinaryOperator extends Infix {
+class BinaryOperator extends Base {
+    constructor(precedence, rightAssoc=false) {
+        super(precedence);
+        this.rightAssoc = rightAssoc;
+    }
     parse(parser, left, token) {
-        let right = parser.parseExpression(this.getPrecedence());
+        let right = parser.parseExpression(this.rightAssoc ? this.precedence-1 : this.precedence);
         return new Expr.Binary(left, token, right);
     }
 }
-class PostfixOperator extends Infix  {
+
+class PostfixOperator extends Base  {
     parse(parser, left, token) {
-        let right = parser.parseExpression(this.getPrecedence());
+        let right = parser.parseExpression(this.precedence);
         return new Expr.Unary(left, token);
     }
 }
-class Plus extends BinaryOperator{
-    getPrecedence() {
-        return precedence.SUM;
-    }
-}
-class Times extends BinaryOperator{
-    getPrecedence() {
-        return precedence.PRODUCT;
-    }
-}
-class Conditional extends Infix  {
+
+class Conditional extends Base  {
     parse(parser, left, token) {
-        let thenArm = parser.parseExpression();
+        let thenArm = parser.parseExpression(this.precedence);
         parser.consume(toks.COLON, `Expected ':' in conditional operator.`);
-        let elseArm = parser.parseExpression();
+        let elseArm = parser.parseExpression(this.precedence);
         return new Expr.Conditional(left, thenArm, elseArm);
     }
 }
 module.exports = {
-    Prefix, Variable, PrefixOperator, Plus, Times, BinaryOperator, PostfixOperator, Conditional
+    Variable, PrefixOperator, BinaryOperator, PostfixOperator, Conditional
 }

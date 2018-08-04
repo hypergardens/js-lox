@@ -33,6 +33,7 @@ class Scanner {
             case ':': this.addToken(toks.COLON); break;
             case '?': this.addToken(toks.QMARK); break;
             case '~': this.addToken(toks.TILDE); break;
+            case '^': this.addToken(toks.CARET); break;
             case '*': this.addToken(toks.STAR); break;
             case '!': this.addToken(this.match('=') ? toks.BANG_EQUAL : toks.BANG); break;
             case '=': this.addToken(this.match('=') ? toks.EQUAL_EQUAL : toks.EQUAL); break;
