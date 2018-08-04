@@ -45,7 +45,7 @@ class AstPrinter extends TreeVisitor{
         return this.parenthesise("PRINT", stmt.expression);
     }
     visitReturnStmt(stmt) {
-        return this.parenthesise("RETURN", stmt.expression);
+        return this.parenthesise("RETURN", stmt.value);
     }
     visitExpressionStmt(stmt) {
         return this.parenthesise("EXPR", stmt.expression);
@@ -78,9 +78,10 @@ class AstPrinter extends TreeVisitor{
         return this.parenthesise(expr.operator.lexeme, expr.right);
     }
     visitVariableExpr(expr) {
-        // WARN: HACK: which one is it?
-        // return expr.name;
         return expr.name.lexeme;
+    }
+    visitConditionalExpr(expr) {
+        return this.parenthesise('?:', expr.cond, expr.thenArm, expr.elseArm);
     }
     // parenthesise(name, ...exprs) {
     //     let strArr = [];

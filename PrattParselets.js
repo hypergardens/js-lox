@@ -12,7 +12,6 @@ class Variable extends Base {
         return new Expr.Variable(token);
     }
 }
-
 class PrefixOperator extends Base {
     parse(parser, token) {
         let right = parser.parseExpression(this.precedence);

@@ -16,18 +16,21 @@ let PRECEDENCE = {
     CALL        : 80,
 }
 
-let code = `a ^ b ^ c`;
+let code = `a+b ? c+d*e : -c`;
 class Parser {
     constructor(tokens) {
         this.tokens = tokens;
         this.current = 0;
         this.prefixParselets = {};
         this.infixParselets = {};
+
         this.registerPrefixParselet(toks.IDENTIFIER, new Parselets.Variable(PRECEDENCE.PREFIX));
         this.prefix(toks.MINUS);
         this.prefix(toks.PLUS);
         this.prefix(toks.TILDE);
         this.prefix(toks.BANG);
+
+        this.registerInfixParselet(toks.QMARK, new Parselets.Conditional(PRECEDENCE.CONDITIONAL));
         this.binary(toks.PLUS, PRECEDENCE.SUM);
         this.binary(toks.STAR, PRECEDENCE.PRODUCT);
         this.binary(toks.CARET, PRECEDENCE.EXPONENT, true);
